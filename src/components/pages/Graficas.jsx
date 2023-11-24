@@ -2,6 +2,7 @@ import UnemploymentMonitor from "../UnemploymentMonitor";
 import FinancialMonitor from "../Monitor";
 import InflationMonitor from "../InflationMonitor";
 import DebtMonitor from "../DebtMonitor";
+import FinancialChart from "../Dolar"
 
 const Graficas = () => {
     return ( 
@@ -21,7 +22,14 @@ const Graficas = () => {
           <div className="p-4 bg-white rounded-xl drop-shadow-2xl">
             <DebtMonitor />
           </div>
+         
+
         </section>
+        <div className="p-4 bg-white rounded-xl drop-shadow-2xl">
+            <FinancialChart />
+          </div>
+
+        
         </div>
      );
 }
