@@ -9,25 +9,25 @@ import {
   RiCloseFill,
 } from "react-icons/ri";
 
-const Sidebar = () => {
+const Sidebar = ({setTipo}) => {
   const [showMenu, setShowMenu] = useState(false);
   return (
     <>
       <div
-        className={`bg-primary-900 h-full fixed lg:static w-[80%] md:w-[40%] lg:w-full transition-all z-50 duration-300 ${
-          showMenu ? "left-0" : "-left-full"
-        }`}
+        className=" hidden md:flex flex-col justify-between gap-8  bg-gray-100 min-h-screen max-h-screen w-80 "
       >
         {/* Profile */}
         {/* Nav */}
-        <div className="bg-primary-300 p-8  h-full overflow-y-scroll flex flex-col justify-between gap-8">
+        <div className="bg-primary-300 p-8  h-full overflow-y-scroll flex flex-col justify-around">
+          <h1 className="text-2xl font-bold text-center text-white">Menu de navegacion</h1>
           <nav className="flex flex-col gap-8">
-            <a
+            <button 
+              onClick={() => setTipo("Graficas")}
               href="#"
               className="flex items-center gap-4 text-white py-2 px-4 rounded-xl hover:bg-primary-900/50 transition-colors"
             >
-              <RiHome3Line /> Inicio
-            </a>
+              <RiHome3Line /> Monitores financieros
+            </button>
             <a
               href="#"
               className="flex items-center gap-4 text-white py-2 px-4 rounded-xl hover:bg-primary-900/50 transition-colors"
