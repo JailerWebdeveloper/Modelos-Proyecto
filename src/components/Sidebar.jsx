@@ -41,7 +41,7 @@ const Sidebar = ({ setTipo }) => {
               <RiShoppingCartLine  /> StockMarket
             </button>
             <button
-              onClick={() => setTipo("Stock")}
+              onClick={() => setTipo("Historial")}
               href="#"
               className="flex items-center gap-4 py-2 px-4 rounded-xl btn btn-outline  transition-colors"
             >
