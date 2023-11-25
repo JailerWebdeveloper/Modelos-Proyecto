@@ -40,13 +40,16 @@ const Sidebar = ({ setTipo }) => {
             >
               <RiShoppingCartLine  /> StockMarket
             </button>
-            
-            <a
+            <button
+              onClick={() => setTipo("Stock")}
               href="#"
               className="flex items-center gap-4 py-2 px-4 rounded-xl btn btn-outline  transition-colors"
             >
-              <RiPieChartLine /> Historial
-            </a>
+              <RiPieChartLine  /> Historial
+            </button>
+            
+
+            
             <label className="flex self-center cursor-pointer gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

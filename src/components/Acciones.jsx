@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Chart from "react-google-charts";
+import moment from "moment"; // Importa moment
+
 
 const StockHistoryChart = () => {
   const [stockData, setStockData] = useState(null);
@@ -8,6 +10,8 @@ const StockHistoryChart = () => {
   const [formData, setFormData] = useState({
     Seleccionado: "AAPL",
   });
+  const [currentPrice, setCurrentPrice] = useState(null);
+  const [cantidad, setCantidad] = useState("");
 
   useEffect(() => {
     axios
@@ -34,6 +38,15 @@ const StockHistoryChart = () => {
         });
 
         setStockData(response.data);
+
+        // Log the last price to the console
+        if (response.data.body) {
+          const lastDataPoint =
+            response.data.body[Object.keys(response.data.body).pop()];
+          const lastPrice = lastDataPoint.open;
+          console.log("Last Price:", lastPrice);
+          setCurrentPrice(lastPrice);
+        }
       } catch (error) {
         console.error("Error fetching stock data:", error);
       }
@@ -45,7 +58,7 @@ const StockHistoryChart = () => {
   const getChartData = () => {
     if (!stockData || !stockData.body) return [];
 
-    const chartData = [['Date', 'Open']];
+    const chartData = [["Date", "Open"]];
     const bodyData = stockData.body;
 
     Object.keys(bodyData).forEach((timestamp) => {
@@ -59,10 +72,38 @@ const StockHistoryChart = () => {
     return chartData;
   };
 
+  const handleCompraClick = async () => {
+    try {
+      const formattedDate = moment().format("YYYY-MM-DD HH:mm:ss"); // Obtiene la fecha y hora actual
+
+      // Construye el objeto de datos a enviar
+      const compraData = {
+        codigo: formData.Seleccionado,
+        fecha: formattedDate,
+        numero_acciones: cantidad,
+        precio: currentPrice,
+      };
+
+      // Realiza la petición POST para guardar la información
+      const response = await axios.post(
+        "https://modelos-2ecbf-default-rtdb.firebaseio.com/STOCK.json",
+        compraData
+      );
+
+      console.log("Respuesta de la petición POST:", response.data);
+      // Aquí puedes agregar más lógica según sea necesario
+
+    } catch (error) {
+      console.error("Error en la petición POST:", error);
+    }
+  };
+
   return (
     <div>
       <select
-        onChange={(event) => setFormData({ ...formData, Seleccionado: event.target.value })}
+        onChange={(event) =>
+          setFormData({ ...formData, Seleccionado: event.target.value })
+        }
         value={formData.Seleccionado}
         name="Seleccionado"
         className="select select-primary w-full"
@@ -74,21 +115,46 @@ const StockHistoryChart = () => {
             </option>
           ))}
       </select>
+      <div className="mt-4 flex items-center">
+        <input
+          type="text"
+          placeholder="Precio Actual"
+          value={currentPrice !== null ? currentPrice : ""}
+          className="flex mx-4 input  input-bordered input-warning w-full max-w-xs"
+          readOnly
+        />
+
+        <input
+          type="text"
+          placeholder="Cantidad a Comprar"
+          value={cantidad}
+          onChange={(e) => setCantidad(e.target.value)}
+          className="flex mx-4 input  input-bordered input-warning w-full max-w-xs"
+        />
+
+        <button
+          onClick={handleCompraClick}
+          className="btn btn-success mx-4"
+        >
+          Comprar
+        </button>
+        <button className="btn btn-error mx-4">Vender</button>
+      </div>
 
       {stockData && (
         <Chart
-          width={'100%'}
-          height={'400px'}
+          width={"100%"}
+          height={"400px"}
           chartType="LineChart"
           loader={<div>Loading Chart</div>}
           data={getChartData()}
           options={{
             title: `Stock Price Over Time - ${formData.Seleccionado}`,
             hAxis: {
-              title: 'Date',
+              title: "Date",
             },
             vAxis: {
-              title: 'Open Price',
+              title: "Open Price",
             },
           }}
         />
