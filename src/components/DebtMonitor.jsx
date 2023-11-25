@@ -30,7 +30,7 @@ const DebtMonitor = () => {
 
   return (
     <div>
-      <h2 className='text-center text-xl'>Debt Monitor</h2>
+      <h2 className='text-center text-xl'>Deuda externa</h2>
       {data.length > 0 ? (
         <Chart
           width={'100%'}

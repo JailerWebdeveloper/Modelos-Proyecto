@@ -80,8 +80,8 @@ const StockHistoryChart = () => {
       const compraData = {
         codigo: formData.Seleccionado,
         fecha: formattedDate,
-        numero_acciones: cantidad,
-        precio: currentPrice,
+        numero_acciones: parseInt(cantidad),
+        precio: parseFloat(currentPrice),
       };
 
       // Realiza la petición POST para guardar la información
@@ -97,7 +97,66 @@ const StockHistoryChart = () => {
       console.error("Error en la petición POST:", error);
     }
   };
-
+  const handleVentaClick = async () => {
+    try {
+      // Realiza una petición GET para obtener todos los registros de acciones
+      const response = await axios.get(
+        "https://modelos-2ecbf-default-rtdb.firebaseio.com/STOCK.json"
+      );
+  
+      // Convierte los registros a un array
+      const accionesRegistradas = Object.entries(response.data);
+  
+      // Busca el registro correspondiente al código seleccionado
+      const registroSeleccionado = accionesRegistradas.find(
+        ([_, data]) => data.codigo === formData.Seleccionado
+      );
+  
+      if (!registroSeleccionado) {
+        console.error("No hay acciones disponibles para vender.");
+        return;
+      }
+  
+      // Extrae el identificador y la información del registro
+      const [id, registro] = registroSeleccionado;
+      const accionesDisponibles = parseInt(registro.numero_acciones);
+  
+      if (accionesDisponibles < cantidad) {
+        console.error("No hay suficientes acciones para vender.");
+        return;
+      }
+  
+      // Calcula las ganancias o pérdidas
+      const gananciasPerdidas =
+        cantidad * (currentPrice - parseFloat(registro.precio));
+  
+      // Actualiza el input de cantidad con la cantidad disponible para vender
+      setCantidad(accionesDisponibles);
+  
+      // Muestra las ganancias o pérdidas en la consola
+      console.log(`Ganancias/Perdidas: ${gananciasPerdidas}`);
+  
+      // Actualiza la base de datos según si se deben restar o eliminar acciones
+      if (accionesDisponibles === cantidad) {
+        // Elimina el registro si se van a vender todas las acciones
+        await axios.delete(
+          `https://modelos-2ecbf-default-rtdb.firebaseio.com/STOCK/${id}.json`
+        );
+      } else {
+        // Actualiza el número de acciones si se van a vender solo algunas
+        await axios.patch(
+          `https://modelos-2ecbf-default-rtdb.firebaseio.com/STOCK/${id}.json`,
+          {
+            numero_acciones: accionesDisponibles - cantidad,
+          }
+        );
+      }
+  
+      console.log("Venta Exitosa.");
+    } catch (error) {
+      console.error("Error en la petición de venta:", error);
+    }
+  };
   return (
     <div>
       <select
@@ -126,7 +185,7 @@ const StockHistoryChart = () => {
 
         <input
           type="text"
-          placeholder="Cantidad a Comprar"
+          placeholder="Cantidad a Comprar o vender"
           value={cantidad}
           onChange={(e) => setCantidad(e.target.value)}
           className="flex mx-4 input  input-bordered input-warning w-full max-w-xs"
@@ -138,7 +197,7 @@ const StockHistoryChart = () => {
         >
           Comprar
         </button>
-        <button className="btn btn-error mx-4">Vender</button>
+        <button  onClick={handleVentaClick}  className="btn btn-error mx-4">Vender</button>
       </div>
 
       {stockData && (
