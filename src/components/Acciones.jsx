@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Chart from "react-google-charts";
 
 const StockHistoryChart = () => {
   const [stockData, setStockData] = useState(null);
-  const [selectStock, setSelectStock] = useState("TSLA");
+  const [options, setOptions] = useState([]);
   const [formData, setFormData] = useState({
-    Seleccionado: "TSLA", // Set default value to a valid stock code
+    Seleccionado: "AAPL",
   });
+
+  useEffect(() => {
+    axios
+      .get("https://modelos-2ecbf-default-rtdb.firebaseio.com/EMPRESAS.json")
+      .then((response) => {
+        setOptions(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +32,8 @@ const StockHistoryChart = () => {
             "X-RapidAPI-Host": "yahoo-finance15.p.rapidapi.com",
           },
         });
-        console.log("API Response:", response.data);
+
+        setStockData(response.data);
       } catch (error) {
         console.error("Error fetching stock data:", error);
       }
@@ -29,39 +42,57 @@ const StockHistoryChart = () => {
     fetchData();
   }, [formData.Seleccionado]);
 
-  useEffect(() => {
-    axios
-      .get("https://modelos-2ecbf-default-rtdb.firebaseio.com/EMPRESAS.json")
-      .then((response) => {
-        setStockData(response.data); // Assuming the data structure is an object with properties like 'meta' and 'body'
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
+  const getChartData = () => {
+    if (!stockData || !stockData.body) return [];
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+    const chartData = [['Date', 'Open']];
+    const bodyData = stockData.body;
+
+    Object.keys(bodyData).forEach((timestamp) => {
+      const dataPoint = bodyData[timestamp];
+      const date = new Date(dataPoint.date_utc * 1000);
+      const open = dataPoint.open;
+
+      chartData.push([date, open]);
+    });
+
+    return chartData;
   };
-
-  console.log(formData.Seleccionado);
 
   return (
     <div>
       <select
-        onChange={handleInputChange}
+        onChange={(event) => setFormData({ ...formData, Seleccionado: event.target.value })}
         value={formData.Seleccionado}
         name="Seleccionado"
         className="select select-primary w-full"
       >
-        {stockData &&
-          Object.keys(stockData).map((key) => (
-            <option key={key} value={stockData[key]}>
+        {options &&
+          Object.keys(options).map((key) => (
+            <option key={key} value={options[key]}>
               {key}
             </option>
           ))}
       </select>
+
+      {stockData && (
+        <Chart
+          width={'100%'}
+          height={'400px'}
+          chartType="LineChart"
+          loader={<div>Loading Chart</div>}
+          data={getChartData()}
+          options={{
+            title: `Stock Price Over Time - ${formData.Seleccionado}`,
+            hAxis: {
+              title: 'Date',
+            },
+            vAxis: {
+              title: 'Open Price',
+            },
+          }}
+        />
+      )}
     </div>
   );
 };
