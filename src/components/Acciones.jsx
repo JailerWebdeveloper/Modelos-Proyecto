@@ -17,7 +17,7 @@ const StockHistoryChart = () => {
       try {
         const response = await axios.get(apiUrl, {
           params: {
-            symbol: selectStock,
+            symbol: formData.Seleccionado,
             interval: "5m",
             diffandsplits: "false",
           },
@@ -31,7 +31,7 @@ const StockHistoryChart = () => {
         console.error("Error fetching stock data:", error);
       }
     };
-
+    console.log(response.data.meta.symbol)
     fetchData();
   }, []);
 
@@ -50,8 +50,8 @@ const StockHistoryChart = () => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
+  console.log(formData.Seleccionado)
 
-  console.log(stockData)
   return (
     <div>
       <select
